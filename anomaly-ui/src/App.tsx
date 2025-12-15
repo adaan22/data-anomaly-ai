@@ -8,6 +8,8 @@ const App: React.FC = () => {
   const [files, setFile] = useState<FileList | null>(null);
   const [progress, setProgress] = useState({ started: false, pc: 0 });
   const [msg, setMsg] = useState<string | null>(null);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [selectedHeader, setSelectedHeader] = useState<string>('');
 
   function handleUpload() {
     if (!files) {
@@ -32,14 +34,27 @@ const App: React.FC = () => {
         });
       }
     })
-      .then(() => setMsg("Upload Successful"))
-      .catch(() => setMsg("Upload Failed"));
+    .then((res) => {
+      setMsg("Upload Successful");
+      if (res.data.headers) {
+        setHeaders(res.data.headers); 
+      }
+    })
+    .catch(() => setMsg("Upload Failed"));
+  }
+
+  const handleAnalyze = () => {
+    if (!selectedHeader) {
+      setMsg("Select a header first");
+      return;
+    }
+    setMsg(`Analyzing column: ${selectedHeader}`);
+    // go to databricks
   }
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
 
-      {/* PixelBlast background */}
       <PixelBlast
         variant="square"
         pixelSize={3}
@@ -50,14 +65,9 @@ const App: React.FC = () => {
         rippleIntensityScale={1.5}
         edgeFade={0.35}
         speed={0.6}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0
-        }}
+        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
       />
 
-      {/* Center UI */}
       <div style={{
         position: 'absolute',
         inset: 0,
@@ -78,10 +88,21 @@ const App: React.FC = () => {
           boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
           border: '2px solid #3A0CA3'
         }}>
-          <input type = "file" multiple accept = ".csv" onChange={(e) => setFile(e.target.files)}/>
+          <input type="file" multiple accept=".csv" onChange={(e) => setFile(e.target.files)} />
           <button onClick={handleUpload} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
             Upload
           </button>
+
+          {headers.length > 0 && (
+            <div>
+              <select onChange={(e) => setSelectedHeader(e.target.value)}>
+                <option value="">-- Select Column --</option>
+                {headers.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+              <button onClick={handleAnalyze}>Analyze</button>
+            </div>
+          )}
+
           {progress.started && <progress max="100" value={progress.pc} />}
           {msg && <span>{msg}</span>}
         </div>
