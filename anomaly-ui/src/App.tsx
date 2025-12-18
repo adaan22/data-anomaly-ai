@@ -49,7 +49,16 @@ const App: React.FC = () => {
       return;
     }
     setMsg(`Analyzing column: ${selectedHeader}`);
-    // go to databricks
+    
+    axios.post('http://localhost:3001/analyze', { column: selectedHeader })
+    .then((res) =>{
+      setMsg("Analysis Complete");
+      console.log("Result: ", res.data)
+    })
+    .catch((err) => {
+      setMsg("Failed");
+      console.error(err);
+    });
   }
 
   return (
@@ -88,7 +97,7 @@ const App: React.FC = () => {
           boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
           border: '2px solid #3A0CA3'
         }}>
-          <input type="file" multiple accept=".csv" onChange={(e) => setFile(e.target.files)} />
+          <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files)} />
           <button onClick={handleUpload} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
             Upload
           </button>
