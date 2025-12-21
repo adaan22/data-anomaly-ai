@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config ({ path: './variables.env'});
+import OpenAI from "openai";
 
 async function anomalizeData() {
 
@@ -202,7 +203,7 @@ async function anomalizeData() {
             });
             const state = status.data.state.life_cycle_state;
             const resultState = status.data.state.result_state;
-            
+
             console.log(`  Status: ${state}${resultState ? ` (${resultState})` : ''}`);
             if (state === 'TERMINATED' || state === 'SKIPPED' || state === 'INTERNAL_ERROR') {
                 isComplete = true;
@@ -230,6 +231,8 @@ async function anomalizeData() {
 
         fs.writeFileSync(path.join(process.cwd(), "values_compared.csv"), csvGetData);
         console.log(csvGetData);
+
+  
 
     } catch (e) {
         console.error('Error:', e.response?.data || e.message);

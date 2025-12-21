@@ -2,6 +2,7 @@ import React from 'react';
 import PixelBlast from "./components/PixelBlast";
 import { useState } from "react";
 import axios from "axios";
+import { Input } from "@chakra-ui/react";
 
 const App: React.FC = () => {
 
@@ -10,6 +11,8 @@ const App: React.FC = () => {
   const [msg, setMsg] = useState<string | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [selectedHeader, setSelectedHeader] = useState<string>('');
+  const [showInput, setShowInput] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>('');
 
   function handleUpload() {
     if (!files) {
@@ -48,7 +51,9 @@ const App: React.FC = () => {
       setMsg("Select a header first");
       return;
     }
+    
     setMsg(`Analyzing column: ${selectedHeader}`);
+    setShowInput(true); // Show the input field
     
     axios.post('http://localhost:3001/analyze', { column: selectedHeader })
     .then((res) =>{
@@ -103,12 +108,23 @@ const App: React.FC = () => {
           </button>
 
           {headers.length > 0 && (
-            <div>
-              <select onChange={(e) => setSelectedHeader(e.target.value)}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+              <select onChange={(e) => setSelectedHeader(e.target.value)} style={{ padding: '8px', borderRadius: '4px' }}>
                 <option value="">-- Select Column --</option>
                 {headers.map(h => <option key={h} value={h}>{h}</option>)}
               </select>
-              <button onClick={handleAnalyze}>Analyze</button>
+              <button onClick={handleAnalyze} style={{ padding: '10px 20px', cursor: 'pointer' }}>Analyze</button>
+              
+              {showInput && (
+                <Input
+                  placeholder="Enter additional information..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  bg="white"
+                  color="black"
+                  width="300px"
+                />
+              )}
             </div>
           )}
 
