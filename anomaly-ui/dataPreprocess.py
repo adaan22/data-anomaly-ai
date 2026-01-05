@@ -35,9 +35,9 @@ def analyzeHeader(filePath, header):
         print("Response Text:", resp.text)
 
         if resp.status_code == 200:
-            print("✅ Upload successful!")
+            print("Upload successful!")
         else:
-            print("❌ Upload failed!")
+            print("Upload failed!")
 
     
     except Exception as e:
