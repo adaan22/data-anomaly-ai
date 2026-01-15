@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [chatQuestion, setChatQuestion] = useState<string>("");
   const [chatAnswer, setChatAnswer] = useState<string>("");
   const [chatLoading, setChatLoading] = useState<boolean>(false);
+  const [sessionId, setSessionId] = useState<string>("");
 
   function handleUpload() {
     if (!files) {
@@ -55,8 +56,9 @@ const App: React.FC = () => {
 
     axios
       .post("http://localhost:3001/analyze", { column: selectedHeader })
-      .then(() => {
+      .then((res) => {
         setMsg("Analysis Complete");
+        setSessionId(res.data.sessionId);
         setChatAnswer(
           `Analysis completed for "${selectedHeader}".\nAsk a question about the results.`
         );
@@ -68,18 +70,28 @@ const App: React.FC = () => {
   };
 
   const handleSendMessage = () => {
-    const q = chatQuestion.trim();
-    if (!q || chatLoading) return;
+  const q = chatQuestion.trim();
+  if (!q || chatLoading) return;
 
-    setChatLoading(true);
-    setChatAnswer("");
+  setChatLoading(true);
+  setChatAnswer("");
 
-    setTimeout(() => {
-      setChatAnswer(`You asked:\n"${q}"\n`);
+  axios
+    .post("http://localhost:3001/chat", {
+      sessionId: sessionId,
+      userMessage: q
+    })
+    .then((res) => {
+      setChatAnswer(res.data.chatbotReply);
       setChatLoading(false);
-      setChatQuestion("");
-    }, 600);
-  };
+      setChatQuestion(""); 
+    })
+    .catch(() => {
+      setChatAnswer("Error getting response. Try again.");
+      setChatLoading(false);
+      setChatQuestion(""); 
+    });
+};
 
   const fileName = files?.[0]?.name || "No file available";
 
@@ -162,8 +174,6 @@ const App: React.FC = () => {
 
             {headers.length > 0 && (
               <>
-
-              {/*Cite from the website when done*/}
                 <Select.Root
                   collection={createListCollection({
                     items: headers.map((h) => ({ label: h, value: h })),
@@ -256,7 +266,7 @@ const App: React.FC = () => {
               {fileName} — {selectedHeader}
             </div>
 
-            <div style={{ flex: 1, padding: 18 }}>
+            <div style={{ flex: 1, padding: 18, overflowY: "auto" }}>
               <div
                 style={{
                   borderRadius: 16,
